@@ -11,7 +11,7 @@ Where the project already has conventions (tokens, widgets, state library, strin
 
 - **Widgets use design tokens, not raw values.** That covers colours, text styles, spacing and radii. Spacing that's off the scale gets rounded to the nearest step and flagged; it doesn't get a new token. `scripts/find_tokens.sh` locates the token file.
 - **Feature-first layers: presentation → domain ← data.** Domain code is pure Dart. Repositories own I/O and return `Result`/`AppError` instead of throwing. State is immutable and sealed.
-- **Change only what the task needs.** Mention anything else you notice. Raising the Dart or Flutter SDK minimum for a package needs the user's go-ahead.
+- **Change only what the task needs.** Mention anything else you notice. Raising the Dart or Flutter SDK minimum for a package needs the user's go-ahead. A dependency raises it too if its own minimum is higher (`go_router` 16 needs Dart 3.7), so check the version you add.
 - **Nothing secret ships in the app.** That includes `--dart-define` values. Logs, analytics and crash reports carry no personal data.
 
 ## References
@@ -42,6 +42,6 @@ Run these from the project root; use `fvm` if the project pins Flutter.
 
 ```bash
 <skill-dir>/scripts/check_tokens.sh     # raw design values in changed lib/ files
-<skill-dir>/scripts/format_changed.sh   # formats only changed files, at the project's line length
+<skill-dir>/scripts/format_changed.sh   # use instead of `dart format .`, which rewrites files you didn't touch
 flutter analyze && flutter test
 ```

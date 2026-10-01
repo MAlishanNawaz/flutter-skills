@@ -23,16 +23,16 @@ Written to Anthropic's [skill authoring best practices](https://platform.claude.
 
 ## Tested
 
-The skill is evaluated with [`evals/evals.json`](skills/alishan/evals/evals.json): 8 realistic tasks, each with objective checks, scored by a blind grader. The latest rounds used the three tasks that separated versions the most (Figma to widget, list jank, cold-start deep link):
+The skill is evaluated with [`evals/evals.json`](skills/alishan/evals/evals.json): 8 tasks with objective checks, run against [`evals/fixture/`](skills/alishan/evals/fixture) and scored by a blind grader that reads each run's git diff. The latest round compared this from-scratch version with the previous one on the three tasks that separated versions most (Figma to widget, list jank, cold-start deep link):
 
-| Configuration | Checks passed |
-|---|---|
-| Current version, Opus | 28/28 (100%), ranked first on every task |
-| Current version, Sonnet | 34/35 (97%), up from 83% before the verify gate and deep-link workflow |
-| Current version, Haiku | 21/35 (60%), unchanged |
-| Previous (longer) version, Opus | 26/28 (93%) |
+| Configuration | Checks passed | Rank (of 4, per task) |
+|---|---|---|
+| This version, Opus | 35/35 (100%) | 1 · 1 · 1 |
+| Previous version, Opus | 34/35 (97%) | 2 · 2 · 2 |
+| This version, Sonnet | 32/35 (91%) | 3 · 4 · 3 |
+| Previous version, Sonnet | 33/35 (94%) | 4 · 3 · 4 |
 
-**Use it with Sonnet or Opus.** Haiku follows parts of the workflow, such as the deep-link auth states, but still skips tests and invents one-off tokens, so review its output closely.
+This version uses about 80% less always-loaded guidance at the same or lower token cost per task. Sonnet's misses (a whole-project `dart format`, and a `go_router` version that silently raises the SDK minimum) are now covered in SKILL.md. The skill targets Sonnet and Opus.
 
 ## Install
 
