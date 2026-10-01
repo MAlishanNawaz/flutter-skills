@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:profile_feature_example/features/profile/domain/profile_rules.dart';
+import 'package:sample_app/features/profile/domain/profile_rules.dart';
 
 import 'fakes.dart';
 
@@ -19,7 +19,7 @@ void main() {
   });
 
   group('validators compose', () {
-    final name = all([notBlank('Required'), maxLength(5, 'Too long')]);
+    final name = all([required('Required'), maxLength(5, 'Too long')]);
     test('first failing rule wins', () {
       expect(name(''), 'Required');
       expect(name('Abcdefg'), 'Too long');

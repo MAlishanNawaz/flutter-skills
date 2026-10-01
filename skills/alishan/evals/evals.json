@@ -5,7 +5,9 @@
       "id": 1,
       "prompt": "Add a 'Course details' screen to this Flutter app (lib/features/courses/). It shows the course title, a status chip (approved / under review / rejected), a yellow tip box saying 'Upload your certificate within 30 days', and a primary 'Upload certificate' button. The design uses #EEF1FF for the tip box background and 16px padding everywhere.",
       "expected_output": "Uses the app's tokens instead of literals (maps #EEF1FF to AppColors.infoSurface, 16 to Spacing.lg); status modelled as enum/sealed and rendered with an exhaustive switch; copy kept out of widget literals; scrollable + SafeArea; no fixed widths; analyze clean.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "No Color(0x...) or bare TextStyle( in new/changed files outside lib/core/design/",
         "Tip box uses AppColors.infoSurface (existing token for #EEF1FF) rather than a new hex",
@@ -22,7 +24,9 @@
       "id": 2,
       "prompt": "Build this Figma frame as a Flutter widget `PlanCard` in lib/features/plans/plan_card.dart. Figma inspect values: frame 375px wide, fill #FFFFFF, corner radius 8, auto-layout vertical, padding 24, gap 12. Title: 'Pro plan', 18px Bold, line-height 24px, color #0D0D0D. Body: 'Unlimited lessons and priority support', 14px Regular, line-height 21px, color #4A4A4A. Price badge: fill #3D5AFE, text #FFFFFF 12px, radius 999, padding 4/8, positioned absolute top 16 right 16. Gap between body and button: 18px.",
       "expected_output": "Maps hexes to AppColors tokens, radius to Radii.card/pill, gaps/padding to Spacing; converts line-height px to multipliers (24/18\u22481.33, 21/14=1.5); drops fixed 375 width; notes the off-scale 18px gap; analyze clean.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "No Color(0x...) literals in plan_card.dart",
         "Uses AppText base/heading copyWith (no bare TextStyle()) for the text",
@@ -41,7 +45,9 @@
       "id": 3,
       "prompt": "Add a 'payments history' feature: fetch a paginated list from GET /payments?cursor=<cursor> (response: {items:[{id, amount_cents, currency, created_at}], next_cursor}), cache it so it shows offline, and show it in a list with pull to refresh and infinite scroll. Include tests. Use a fake API source; no real HTTP needed.",
       "expected_output": "Feature-first domain/data/presentation; repository interface in domain; DTO+mapper in data; Result/AppError; cursor pagination state ignoring concurrent loads; cache-then-network; sealed states; lazy list; fake-based tests passing.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "lib/features/payments has domain/, data/ and presentation/ folders",
         "Domain declares an abstract repository interface; domain files import no Flutter/HTTP/JSON packages",
@@ -59,7 +65,9 @@
       "id": 4,
       "prompt": "Our signup form (lib/features/signup/signup_screen.dart) lets users tap 'Create account' twice and it creates two accounts. Also errors show while they're still typing the first character. Fix both and add a test.",
       "expected_output": "Real in-flight guard (button disabled and/or early return while submitting), not the pass-through overlay; errors on interaction/submit instead of always; test double-taps and asserts one createAccount call; also handles failures/mounted.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "Submit is guarded while in flight (disabled onPressed and/or early return)",
         "AutovalidateMode.always is no longer used from the first keystroke",
@@ -75,7 +83,9 @@
       "id": 5,
       "prompt": "lib/features/courses/courses_screen.dart janks when scrolling on older Android phones with ~500 courses. Fix the performance problems.",
       "expected_output": "ListView.builder instead of Column-in-scroll; decode thumbnails near display size (cacheWidth); remove/replace heavy blur shadow; row extracted as const-able widget; mentions profiling in profile mode.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "Uses a lazy ListView.builder / SliverList instead of Column + map inside SingleChildScrollView",
         "Thumbnails decoded at display size (cacheWidth/cacheHeight/ResizeImage)",
@@ -94,7 +104,9 @@
       "id": 6,
       "prompt": "Write a widget test that checks ProfileCompletionCard (lib/features/profile/presentation/widgets/profile_completion_card.dart) doesn't overflow on small phones or with large accessibility text.",
       "expected_output": "Pumps with MaterialApp/theme; tests several sizes and text scales; asserts takeException is null; addresses Ahem test font (loads real font or explains); test passes.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "Test covers multiple screen sizes",
         "Test covers a larger text scale (>=1.5)",
@@ -110,7 +122,9 @@
       "id": 7,
       "prompt": "Deep link https://example.com/courses/42 should open the course screen, even if the app was killed and the user isn't logged in yet. The app doesn't have routing yet. Set it up (code + whatever native/site config is needed \u2014 write the config files/snippets into the project) and tell me how to test it.",
       "expected_output": "go_router with :courseId path; central redirect preserving from=; refreshListenable on auth; App Links (intent-filter autoVerify + assetlinks.json) and Universal Links (entitlement + AASA); id validation; adb/simctl test commands for cold and warm start.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "Router defines a /courses/:courseId route (path parameter, not an object)",
         "Auth redirect sends signed-out users to login and preserves the original location (e.g. from=)",
@@ -131,7 +145,9 @@
       "id": 8,
       "prompt": "We need dev, qa and prod builds of this app. Also, where should I put the secret API key for our payment provider? Set up what you can in the project and explain the rest.",
       "expected_output": "Native flavors with distinct application IDs; --dart-define-from-file per env; states dart-defines are extractable so the secret key must stay server-side (only publishable keys in app); guard against QA builds reaching prod.",
-      "files": [],
+      "files": [
+        "evals/fixture/"
+      ],
       "assertions": [
         "Per-environment config files used with --dart-define(-from-file)",
         "Distinct application IDs / bundle IDs per flavor",

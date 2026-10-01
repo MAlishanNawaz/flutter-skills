@@ -20,11 +20,8 @@ fi
 files=$(printf '%s\n' "$files" | grep -E '^lib/.*\.dart$' || true)
 if [ -z "$files" ]; then echo "check_tokens: no changed lib/ Dart files"; exit 0; fi
 
-# The token file is the one place raw values belong. Auto-detect it unless TOKENS_PATH is set.
-skip="${TOKENS_PATH:-}"
-if [ -z "$skip" ]; then
-  skip=$(grep -rlE "abstract( final)? class \w*(Colors|Palette|Spacing|Tokens)\b|class \w*(Colors|Palette)\b|extends ThemeExtension<" lib 2>/dev/null | tr '\n' '|' | sed 's/|$//')
-fi
+# The token files are the one place raw values belong (see find_tokens.sh).
+skip="${TOKENS_PATH:-$("$here/find_tokens.sh" | tr '\n' '|' | sed 's/|$//')}"
 
 rules=(
   'raw hex colour|Color\(0x[0-9A-Fa-f]{6,8}\)'

@@ -1,0 +1,7 @@
+{
+  "applinks": {
+    "details": [
+      { "appIDs": ["TEAMID.com.example.app"], "components": [{ "/": "/courses/*" }] }
+    ]
+  }
+}

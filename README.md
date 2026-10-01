@@ -8,44 +8,18 @@ responsive, and tested with real fonts.
 
 ### `/alishan`: Flutter playbook
 
-One entry point. It reads your project's own conventions first, follows a short workflow checklist (build UI, add a feature, fix a bug), and loads only the guide the task needs. It's written to [Anthropic's skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): a concise SKILL.md, references one level deep, scripts for repeatable checks, and evals.
+A short SKILL.md with four opinions (tokens, layers, scope, no secrets), and four supporting parts that load only when needed:
 
-**Build the UI**
-- [`design-tokens.md`](skills/alishan/references/design-tokens.md): no raw hex, `TextStyle()` or magic numbers; finding and creating tokens
-- [`ui-components.md`](skills/alishan/references/ui-components.md): reuse before you build, narrow-column/web layout, copy, interaction details
-- [`figma-to-flutter.md`](skills/alishan/references/figma-to-flutter.md): Figma / Figma MCP output → token-bound Flutter
-- [`forms.md`](skills/alishan/references/forms.md): composable validators, when to show errors, keyboard/autofill, double-submit-proof
-- [`accessibility-theming.md`](skills/alishan/references/accessibility-theming.md): semantics, 48 dp targets, 2× text, contrast, `ThemeExtension` dark mode, RTL
-- [`animation-motion.md`](skills/alishan/references/animation-motion.md): implicit → explicit, motion tokens, Hero, transitions, reduced motion
+| Part | What it holds |
+|---|---|
+| [`examples/profile_feature/`](skills/alishan/examples/profile_feature) | **The main reference: runnable code, not prose.** Feature in presentation/domain/data, `Result`/`AppError`, sealed state, cubit, double-submit form, cold-start auth redirect, fakes, widget-test harness. 29 tests. |
+| [`examples/deeplink_config/`](skills/alishan/examples/deeplink_config) | Android manifest snippet, `Runner.entitlements`, `assetlinks.json`, AASA, test commands |
+| [`gotchas/`](skills/alishan/gotchas) | Four files of non-obvious Flutter traps only: `ui`, `data`, `platform`, `testing` |
+| [`scripts/`](skills/alishan/scripts) | `find_tokens.sh`, `check_tokens.sh` (raw values in changed files), `format_changed.sh` (changed files only, detects line length) |
+| [`templates/`](skills/alishan/templates) | Token file and lint set for projects without them |
+| [`evals/`](skills/alishan/evals) | 8 tasks with checks, plus the fixture app they run against |
 
-**Structure the app**
-- [`architecture.md`](skills/alishan/references/architecture.md): presentation/domain/data, feature-first folders, repositories, DI
-- [`functional-programming.md`](skills/alishan/references/functional-programming.md): immutability, pure functions, sealed states, `Result` errors
-- [`state-management.md`](skills/alishan/references/state-management.md): bloc/cubit, Riverpod, provider done well
-- [`networking-offline.md`](skills/alishan/references/networking-offline.md): dio client, single-flight auth refresh, retries, caching, offline outbox, pagination
-- [`navigation-deeplinks.md`](skills/alishan/references/navigation-deeplinks.md): go_router, auth redirects, tab shells, App Links / Universal Links, web URLs
-- [`platform-integration.md`](skills/alishan/references/platform-integration.md): `kIsWeb`, plugins, Pigeon/channels, permissions, push, lifecycle
-
-**Quality & shipping**
-- [`ui-testing.md`](skills/alishan/references/ui-testing.md): widget tests with the real theme and fonts, sizes, text scale
-- [`testing-strategy.md`](skills/alishan/references/testing-strategy.md): test pyramid, fakes, bloc tests, integration/Patrol E2E, coverage
-- [`performance.md`](skills/alishan/references/performance.md): profiling, rebuild scope, lazy lists, image decoding, isolates, startup
-- [`flavors-ci-release.md`](skills/alishan/references/flavors-ci-release.md): fvm, flavors, `--dart-define`, CI, Play/App Store releases
-- [`security-observability.md`](skills/alishan/references/security-observability.md): secrets, secure storage, hardening, privacy, crashes, logs, analytics
-
-**Scripts** (run from the project root)
-- [`check_tokens.sh`](skills/alishan/scripts/check_tokens.sh): flags raw hex, Material colours, bare `TextStyle(` and numeric gaps, paddings and radii in changed files
-- [`format_changed.sh`](skills/alishan/scripts/format_changed.sh): formats only the files you changed, never the whole project
-- [`changed_dart_files.sh`](skills/alishan/scripts/changed_dart_files.sh): lists the branch's changed Dart files
-
-**Starters**
-- [`examples/profile_feature`](skills/alishan/examples/profile_feature): a complete feature (domain/data/presentation + 18 tests), passes analyze and test on Flutter 3.24 and 3.41
-- [`tokens_template.dart`](skills/alishan/references/tokens_template.dart): starter design-token file
-- [`analysis_options.yaml`](skills/alishan/references/analysis_options.yaml): strict lint set that enforces many of the rules
-- [`evals/evals.json`](skills/alishan/evals/evals.json): test prompts for checking the skill with `skill-creator`
-
-The guides aren't tied to any project. The skill reads your project's own tokens, widgets,
-state management and copy setup first, and follows them.
+Written to Anthropic's [skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) and the [context-engineering rules for Claude 5 models](https://claude.dev/blog/the-new-rules-of-context-engineering-for-claude-5-generation-models/): code references over specs, gotchas over generic advice, each instruction stated once, absolute language only where it's critical.
 
 ## Tested
 
@@ -66,7 +40,7 @@ Personal (all projects):
 
 ```bash
 git clone https://github.com/MAlishanNawaz/flutter-skills.git
-cp -R flutter-skills/skills/alishan ~/.claude/skills/
+cp -R flutter-skills/skills/alishan ~/.claude/skills/   # evals/ is optional
 ```
 
 Single project:

@@ -21,8 +21,7 @@ String initials(Profile p) =>
 
 typedef Validator = String? Function(String value);
 
-// Not named `required`: that clashes with package:meta's `@required`, which material.dart re-exports.
-Validator notBlank(String message) => (v) => v.trim().isEmpty ? message : null;
+Validator required(String message) => (v) => v.trim().isEmpty ? message : null;
 Validator maxLength(int n, String message) => (v) => v.trim().length > n ? message : null;
 
 Validator all(List<Validator> validators) => (v) {

@@ -1,0 +1,57 @@
+# Starter lints for a Flutter app (copy to the project root and adjust).
+# Automates many of the /alishan rules; run `dart fix --apply` after adding.
+
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+  errors:
+    missing_required_param: error
+    unawaited_futures: warning
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "lib/gen/**"
+
+linter:
+  rules:
+    # Rebuild performance
+    - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables
+    - use_key_in_widget_constructors
+
+    # Immutability / functional style
+    - prefer_final_locals
+    - prefer_final_fields
+    - prefer_final_in_for_each
+    - avoid_returning_null_for_void
+    - no_leading_underscores_for_local_identifiers
+
+    # Safety
+    - avoid_dynamic_calls
+    - cancel_subscriptions
+    - close_sinks
+    - unawaited_futures
+    - use_build_context_synchronously
+    - avoid_print
+    - always_declare_return_types
+    - only_throw_errors
+    - unnecessary_null_checks
+    - unnecessary_nullable_for_final_variable_declarations
+
+    # Readability
+    - require_trailing_commas
+    - sort_child_properties_last
+    - use_super_parameters
+    - directives_ordering
+    - prefer_single_quotes
+
+# Raw colours and TextStyle() outside the token file can't be banned with built-in lints.
+# Options: a custom_lint rule, or this CI grep (fails if any appear outside the tokens file):
+#
+#   ! grep -rnE "Color\(0x|TextStyle\(" lib --include='*.dart' | grep -v "lib/core/design/"

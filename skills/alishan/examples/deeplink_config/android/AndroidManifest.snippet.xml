@@ -1,0 +1,12 @@
+<!-- Merge into android/app/src/main/AndroidManifest.xml.
+     Both elements go INSIDE the MainActivity <activity>. Under <application> the meta-data is
+     silently ignored (it is on by default from Flutter 3.27; set it if your SDK minimum is lower). -->
+<activity xmlns:android="http://schemas.android.com/apk/res/android" android:name=".MainActivity" android:launchMode="singleTop">
+  <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+  <intent-filter android:autoVerify="true">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="https" android:host="example.com" android:pathPrefix="/courses" />
+  </intent-filter>
+</activity>
