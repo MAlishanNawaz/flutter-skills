@@ -1,6 +1,6 @@
 ---
 name: alishan
-description: Alishan's Flutter playbook — architect apps in clean feature-first layers with functional, immutable Dart, and build screens, widgets and Figma designs in any Flutter app with every colour, text style, radius and gap bound to a design token, shared widgets reused before new ones are written, layouts that hold up on phones and narrow web columns, and UI tests that catch real overflows. Use when creating or refactoring a Flutter screen, card, dialog, button or input; when implementing a Figma frame or figma.com link in Flutter; when setting up or auditing a design-token file; when writing widget/layout tests for UI; or when designing app architecture, structuring features, repositories, state and error handling, or writing functional-style Dart (immutability, pure functions, sealed states, Result types).
+description: Alishan's Flutter playbook — architect apps in clean feature-first layers with functional, immutable Dart, and build screens, widgets and Figma designs in any Flutter app with every colour, text style, radius and gap bound to a design token, shared widgets reused before new ones are written, layouts that hold up on phones and narrow web columns, UI tests that catch real overflows, plus state management, performance, accessibility, theming and forms. Use when creating or refactoring a Flutter screen, card, dialog, button or input; when implementing a Figma frame or figma.com link in Flutter; when setting up or auditing a design-token file; when writing widget/layout tests for UI; or when designing app architecture, structuring features, repositories, state and error handling, or writing functional-style Dart (immutability, pure functions, sealed states, Result types); when writing a bloc/cubit/Riverpod/provider state holder; when fixing jank or slow lists; when handling accessibility, dark mode or RTL; or when building forms and validation.
 ---
 
 # Flutter — Alishan's playbook
@@ -31,6 +31,11 @@ Six rules sit under everything here:
 | Write widget, layout or golden tests for UI | `references/ui-testing.md` |
 | Model data/state, write business logic, handle errors functionally | `references/functional-programming.md` |
 | Structure an app or feature, add a repository, wire DI, review architecture | `references/architecture.md` |
+| Write a bloc/cubit, Riverpod notifier, ChangeNotifier; decide where state lives | `references/state-management.md` |
+| Jank, slow lists, heavy images, startup time, memory leaks | `references/performance.md` |
+| Screen readers, tap targets, text scale, contrast, dark mode, RTL | `references/accessibility-theming.md` |
+| Build a form: validation, error timing, keyboard/focus, safe submit | `references/forms.md` |
+| See all of the above in real, tested code | `examples/profile_feature/` (one complete feature) |
 | Project has no token file yet | `references/tokens_template.dart` as a starting point |
 
 Read only the guides the task needs.
@@ -67,5 +72,6 @@ ls .fvmrc .fvm/fvm_config.json 2>/dev/null
 - [ ] Copy lives where the project keeps copy, not as string literals in the widget tree.
 - [ ] Renders at phone width and at the web content width; scrolls where content can overflow;
       `SafeArea` at the edges.
+- [ ] Labelled for screen readers, 48 dp targets, holds at 2× text, works in dark mode if the app has it.
 - [ ] Logic in pure functions; state immutable; no I/O in widgets; layer boundaries respected.
 - [ ] `dart format`, `flutter analyze` clean; tests pass.
