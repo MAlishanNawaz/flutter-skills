@@ -1,94 +1,37 @@
 # Figma → Flutter
 
-Figma's code export and the Figma MCP tools (`get_design_context`, `get_screenshot`,
-`get_variable_defs`) give you generic code full of **hardcoded hex, px values and font
-families**. Treat that output as a spec to translate, never as code to paste.
+Figma output (Dev Mode, or the Figma MCP's generated code) is a **spec to translate**, never code to paste. It is full of hex values, px sizes, font families and absolute positions.
 
 ## Workflow
 
-1. **Pull the design.**
-   - `get_screenshot`: the visual target.
-   - `get_design_context`: node tree, auto-layout, sizes.
-   - `get_variable_defs`: the Figma variables the frame uses. These often map one-to-one onto
-     code tokens.
-   If the MCP isn't available, ask for a screenshot plus the inspect panel values. A
-   per-frame "Copy link to selection" link works better than a whole-file link, which can be
-   too big to fetch.
-2. **Build a mapping table** from the project's token file (see `design-tokens.md`):
-   Figma hex → colour token, spacing values → spacing steps, text layers → base style + overrides,
-   radius → radius token. Write it down before writing any widgets.
-3. **Find the existing widgets.** Most Figma components (buttons, inputs, cards, tip boxes)
-   already exist in the codebase. Match by appearance, not by Figma layer name
-   (see `ui-components.md` §1).
-4. **Build the screen** using only mapped tokens and existing widgets.
-5. **Verify** against the screenshot at phone width and at the web content width, then analyze.
-
-## Mapping rules
-
-### Fills
-
-Every Figma hex goes through the token file:
-
-```bash
-grep -rin "3D5AFE" lib/path/to/tokens.dart
+```
+- [ ] 1. Pull: Figma:get_screenshot (visual), Figma:get_design_context (tree), Figma:get_variable_defs (variables)
+- [ ] 2. Write the mapping table: every hex, gap, padding, radius, text style → token (see design-tokens.md)
+- [ ] 3. Match Figma components to existing widgets by appearance, not layer name
+- [ ] 4. Build; run scripts/check_tokens.sh until clean
+- [ ] 5. Compare with the screenshot at phone width and web content width; widget-test both
+- [ ] 6. In the summary, list rounded off-scale values, assumptions and missing states
 ```
 
-No match: check for a near-duplicate (designers drift by one or two hex steps), then add a
-**named** constant. Never inline it.
+If the Figma tools aren't available, ask for a screenshot plus the inspect values. If a whole-file fetch is too large, ask for a per-frame "Copy link to selection".
 
-### Text
-
-The base style already sets the font family. Carry over only **size, weight, line height,
-letter spacing and colour**:
-
-```dart
-style: AppText.base.copyWith(fontSize: 18, fontWeight: FontWeight.w700, height: 1.3, color: AppColors.textPrimary)
-```
-
-- Line height: `height = lineHeightPx / fontSize`.
-- Letter spacing: Figma `%` → Flutter logical px: `letterSpacing = fontSize * percent / 100`.
-- Figma weight names → `FontWeight`: Regular w400, Medium w500, Semibold w600, Bold w700.
-
-### Auto-layout
+## Conversions
 
 | Figma | Flutter |
 |---|---|
-| Vertical auto-layout | `Column` |
-| Horizontal auto-layout | `Row` |
-| Gap | `SizedBox(height/width: Spacing.x)` between children (or `spacing:` on newer Flutter) |
-| Padding | `Padding` / container `padding` with spacing tokens |
-| Fill container | `Expanded` / `double.infinity` |
-| Hug contents | default (`mainAxisSize: MainAxisSize.min` where needed) |
-| Wrap | `Wrap` with `spacing` / `runSpacing` |
+| Line height 24 px on 18 px text | `height: 24 / 18` |
+| Letter spacing 2 % | `letterSpacing: fontSize * 0.02` |
+| Regular / Medium / Semibold / Bold | `w400` / `w500` / `w600` / `w700` |
+| Vertical / horizontal auto-layout | `Column` / `Row`; gaps are `SizedBox(Spacing.x)`, or `spacing:` on Flutter 3.27+ |
+| Fill container / hug | `Expanded` or `double.infinity` / the default size (`MainAxisSize.min`) |
 | Space between | `MainAxisAlignment.spaceBetween` |
+| Wrap | `Wrap(spacing:, runSpacing:)` |
+| Absolute child | `Stack` + `PositionedDirectional`, **only** for true overlays (badges, floating CTAs) |
+| Frame width 375/390 | Ignore it; the layout must flex |
 
-Round off-scale values to the nearest spacing token and mention it in the PR.
+## Traps
 
-### Radius, icons, images
-
-- Radius → the radius token; pill → `circular(999)`; circle → `BoxShape.circle`.
-- Icons → the project's icon font if the glyph is there; otherwise export SVG to `assets/`,
-  regenerate asset accessors (`flutter_gen`/`fluttergen`), and use the generated accessor.
-  Never put asset paths in string literals.
-- Images → export at 2× and 3× (or SVG), and use generated accessors.
-
-## What Figma output gets wrong
-
-- **Fixed frame widths** (375/390 px). Convert to flexible layout. The app also runs at
-  other widths (big phones, clamped web columns).
-- **Absolute positioning.** `Stack` + `Positioned` everywhere should become `Column`/`Row`, unless
-  the design really is an overlay (badge on avatar, floating CTA).
-- **Hardcoded copy.** Every string becomes a localized/strings-class entry.
-- **`TextStyle(fontFamily: …)`.** Use the base style.
-- **Lookalike components.** If a Figma component matches an existing widget, use that widget,
-  even when the layer name differs.
-- **Missing states.** Mockups often show only the happy path. Ask for, or build sensibly,
-  loading, empty, error and disabled states, plus long-text and large-font cases.
-
-## Definition of done
-
-- [ ] Mapping table drafted; no raw hex, bare `TextStyle(`, or magic numbers in the diff.
-- [ ] Existing widgets reused where Figma components match.
-- [ ] Compared to the screenshot at phone width and at the web content width.
-- [ ] Copy externalised; assets generated, not referenced as string paths.
-- [ ] Off-scale values and missing states mentioned in the PR description.
+- Figma text colours often duplicate a token with a different name. Map by hex, not by Figma's style name.
+- A badge at an absolute position can overlap a long title. Reserve trailing space or flag it.
+- Mockups show the happy path only. Build loading, empty, error and disabled states, and say which ones you assumed.
+- Prompt and design disagree (for example the text says "yellow" but the hex is blue): follow the more specific value and surface the conflict.

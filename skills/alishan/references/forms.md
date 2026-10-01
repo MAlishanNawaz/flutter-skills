@@ -1,108 +1,58 @@
-# Forms & validation
-
-## Shape
-
-- **Validation rules are pure functions** in the domain (`String? Function(String)`), composed
-  and unit-tested. The widget just wires them up.
-- **Form state** (values, submit status) lives in the screen's state holder, or a `Form` +
-  `GlobalKey<FormState>` for simple forms. Text controllers live in the widget's `State`, and
-  are disposed.
-- **Submit** sends an intent to the state holder, which calls the repository and returns a
-  `Result`. Server-side field errors map back onto fields.
-
-## Validators
-
-```dart
-typedef Validator = String? Function(String value);
-
-Validator required(String message) => (v) => v.trim().isEmpty ? message : null;
-Validator maxLength(int n, String message) => (v) => v.length > n ? message : null;
-Validator matches(RegExp re, String message) => (v) => v.isEmpty || re.hasMatch(v) ? null : message;
-
-Validator all(List<Validator> validators) => (v) {
-      for (final validate in validators) {
-        final error = validate(v);
-        if (error != null) return error;
-      }
-      return null;
-    };
-```
-
-Messages are passed **in** (from the project's strings), so the domain stays free of localization.
+# Forms
 
 ## When to show errors
 
-Showing errors on every keystroke from the first character is hostile. The usual sequence:
+| Moment | Behaviour |
+|---|---|
+| Typing in a field never left | No error |
+| Field loses focus | Validate that field |
+| Submit | Validate all fields, focus and scroll to the first invalid one |
+| Field has already shown an error | Re-validate it live, so the error clears as soon as the input is fixed |
 
-1. Don't show anything while the user types in a field they haven't left yet.
-2. Validate a field **when it loses focus** (or `AutovalidateMode.onUserInteraction` after
-   first blur).
-3. On **submit**, validate everything, show all errors, and **move focus to the first invalid
-   field** (and scroll it into view).
-4. Once a field has shown an error, re-validate it live so the error clears as soon as the input
-   is fixed.
+`AutovalidateMode.always` breaks row 1. Use `onUserInteraction` only after the first submit, or switch each field's mode from focus listeners. `AutovalidateMode.onUnfocus` doesn't exist in Flutter 3.24; check the project's SDK constraint before using it.
 
-```dart
-TextFormField(
-  controller: _email,
-  focusNode: _emailFocus,
-  decoration: InputDecoration(labelText: strings.emailLabel),   // a visible label, not just a hint
-  keyboardType: TextInputType.emailAddress,
-  textInputAction: TextInputAction.next,
-  autofillHints: const [AutofillHints.email],
-  autovalidateMode: _submitted ? AutovalidateMode.always : AutovalidateMode.onUserInteraction,
-  validator: (v) => emailValidator(v ?? ''),
-  onFieldSubmitted: (_) => _passwordFocus.requestFocus(),
-)
-```
-
-## Keyboard & focus
-
-- Set `keyboardType`, `textInputAction` (`next` / `done`), `textCapitalization`, and
-  `autofillHints` on every field. Wrap login/signup in `AutofillGroup`.
-- `onFieldSubmitted` moves to the next field; the last field submits.
-- Make the form scrollable so the keyboard never hides the active field. Keep the CTA visible
-  (pinned above the keyboard or at the end of the scroll).
-- Tap outside to dismiss: `GestureDetector(onTap: () => FocusScope.of(context).unfocus())` at
-  the screen root.
-- Use `inputFormatters` for constrained input (digits only, max length, card or phone masks),
-  as well as validation, not instead of it.
-
-## Submitting safely
+## Double submit, the usual bug
 
 ```dart
-FilledButton(
-  onPressed: state is Submitting ? null : () => context.read<SignupCubit>().submit(values),
-  child: state is Submitting ? const SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2)) : Text(strings.submit),
-)
+Future<void> _submit() async {
+  if (_submitting) return;                    // checked and set before the first await
+  if (!_formKey.currentState!.validate()) return;
+  setState(() => _submitting = true);
+  try {
+    await api.createAccount(...);
+  } catch (e) {
+    if (mounted) _showError(e);
+  } finally {
+    if (mounted) setState(() => _submitting = false);
+  }
+}
+// button: onPressed: _submitting ? null : _submit
 ```
 
-- **Disable while in flight**, and also drop repeat taps in the state holder (`droppable()` or
-  an `if (state is Submitting) return;` guard). An overlay that doesn't block pointer events is
-  not a guard.
-- Keep entered values on failure. Show the error next to the field it's about, or in a banner
-  for general errors.
-- Map server validation errors (`AppError.validation({field: message})`) back onto fields.
-- Warn before leaving a form with unsaved changes (`PopScope` with `canPop: !dirty`).
-- Trim and normalise input (`email.trim().toLowerCase()`) in one place before sending it.
+- Disabling the button alone fails for two taps in the same frame. The flag check in the handler is what stops them.
+- An `IgnorePointer` or translucent overlay is not a guard: taps go straight through it.
+- Route the keyboard "done" action through the same `_submit`.
+- With bloc, the guard lives in the state holder (`if (state is Submitting) return;` or `droppable()`).
+- Keep entered values on failure, and map server field errors back onto the fields.
 
-## Accessibility
+## Field setup
 
-- Every field has a **visible label**. Placeholders disappear once you type.
-- Error text goes in `errorText`/`validator`, which screen readers announce. Pair it with an icon,
-  not colour alone.
-- Group related choices (radio sets) with a labelled `Semantics` container.
+Every field needs a **visible label** (a hint disappears once you type), `keyboardType`, `textInputAction` (`next`/`done`), and `autofillHints`, wrapped in an `AutofillGroup` for auth forms. `onFieldSubmitted` moves focus to the next field.
+
+## Validators
+
+Write them as pure functions in the domain, with messages passed in so the domain stays free of localization:
+
+```dart
+typedef Validator = String? Function(String v);
+Validator all(List<Validator> vs) => (v) { for (final f in vs) { final e = f(v); if (e != null) return e; } return null; };
+```
 
 ## Tests
 
-- Unit-test validators and composition (pure, quick).
-- Widget-test the flow: submit empty → errors shown and first field focused → fix → error
-  clears → submit fires once, even on a double tap.
-
-## Checklist
-
-- [ ] Validators are pure, composed and unit-tested; messages come from the project's strings.
-- [ ] Errors appear on blur or submit, not the first keystroke; focus jumps to the first error.
-- [ ] Keyboard types, actions, autofill hints and next-field focus set.
-- [ ] Scrolls with the keyboard open; CTA reachable.
-- [ ] Double-submit impossible; values kept on failure; server errors mapped to fields.
+Cover these:
+- two taps in the same frame call the API once
+- no error while typing the first characters
+- submitting empty shows errors and focuses the first field
+- fixing a field clears its error
+- a failure re-enables the button and keeps the input

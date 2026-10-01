@@ -8,7 +8,7 @@ responsive, and tested with real fonts.
 
 ### `/alishan`: Flutter playbook
 
-One entry point. It reads your project's own conventions first, then loads only the guide for the task.
+One entry point. It reads your project's own conventions first, follows a short workflow checklist (build UI, add a feature, fix a bug), and loads only the guide the task needs. It's written to [Anthropic's skill authoring best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices): a concise SKILL.md, references one level deep, scripts for repeatable checks, and evals.
 
 **Build the UI**
 - [`design-tokens.md`](skills/alishan/references/design-tokens.md): no raw hex, `TextStyle()` or magic numbers; finding and creating tokens
@@ -33,6 +33,11 @@ One entry point. It reads your project's own conventions first, then loads only 
 - [`flavors-ci-release.md`](skills/alishan/references/flavors-ci-release.md): fvm, flavors, `--dart-define`, CI, Play/App Store releases
 - [`security-observability.md`](skills/alishan/references/security-observability.md): secrets, secure storage, hardening, privacy, crashes, logs, analytics
 
+**Scripts** (run from the project root)
+- [`check_tokens.sh`](skills/alishan/scripts/check_tokens.sh): flags raw hex, Material colours, bare `TextStyle(` and numeric gaps, paddings and radii in changed files
+- [`format_changed.sh`](skills/alishan/scripts/format_changed.sh): formats only the files you changed, never the whole project
+- [`changed_dart_files.sh`](skills/alishan/scripts/changed_dart_files.sh): lists the branch's changed Dart files
+
 **Starters**
 - [`examples/profile_feature`](skills/alishan/examples/profile_feature): a complete feature (domain/data/presentation + 18 tests), passes analyze and test on Flutter 3.24 and 3.41
 - [`tokens_template.dart`](skills/alishan/references/tokens_template.dart): starter design-token file
@@ -41,6 +46,19 @@ One entry point. It reads your project's own conventions first, then loads only 
 
 The guides aren't tied to any project. The skill reads your project's own tokens, widgets,
 state management and copy setup first, and follows them.
+
+## Tested
+
+The skill is evaluated with [`evals/evals.json`](skills/alishan/evals/evals.json): 8 realistic tasks, each with objective checks. A blind grader scores every run, comparing runs with and without the skill and across models. Latest round, on the three tasks that separated versions most (Figma → widget, list jank, cold-start deep link):
+
+| Configuration | Checks passed | Avg rank (of 4) |
+|---|---|---|
+| This version, Opus | 28/28 (100%) | 1.0 |
+| Previous version, Opus | 26/28 (93%) | 2.3 |
+| This version, Sonnet | 24/28 (86%) | 2.7 |
+| This version, Haiku | 21/28 (75%) | 4.0 |
+
+Haiku's misses (skipping the token check, losing the cold-start link) led to the "before your final message" gate and the deep-link workflow in SKILL.md.
 
 ## Install
 

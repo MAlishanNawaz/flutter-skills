@@ -3,63 +3,145 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "Add a 'Course details' screen to this Flutter app. It shows the course title, a status chip (approved / under review / rejected), a yellow tip box, and a primary 'Upload certificate' button. The design uses #FFF7B1 for the tip box and 16px padding.",
-      "expected_output": "Reuses existing button/tip widgets; maps #FFF7B1 and 16px to the project's tokens instead of literals; status as an enum/sealed type rendered with an exhaustive switch; copy externalised; scrollable layout with SafeArea; no fixed widths.",
-      "files": []
+      "prompt": "Add a 'Course details' screen to this Flutter app (lib/features/courses/). It shows the course title, a status chip (approved / under review / rejected), a yellow tip box saying 'Upload your certificate within 30 days', and a primary 'Upload certificate' button. The design uses #EEF1FF for the tip box background and 16px padding everywhere.",
+      "expected_output": "Uses the app's tokens instead of literals (maps #EEF1FF to AppColors.infoSurface, 16 to Spacing.lg); status modelled as enum/sealed and rendered with an exhaustive switch; copy kept out of widget literals; scrollable + SafeArea; no fixed widths; analyze clean.",
+      "files": [],
+      "assertions": [
+        "No Color(0x...) or bare TextStyle( in new/changed files outside lib/core/design/",
+        "Tip box uses AppColors.infoSurface (existing token for #EEF1FF) rather than a new hex",
+        "Padding uses Spacing.lg / Spacing tokens rather than literal 16",
+        "Course status is an enum or sealed type rendered via switch",
+        "Screen body is scrollable (ListView / SingleChildScrollView) and wrapped in SafeArea",
+        "flutter analyze reports no issues",
+        "Every size in new code is a token (tap target, max width, icon size), not only the 16px padding",
+        "The primary CTA guards against a double tap on its async action",
+        "No files unrelated to the task are modified"
+      ]
     },
     {
       "id": 2,
-      "prompt": "Implement this Figma frame in Flutter: https://www.figma.com/design/EXAMPLE/App?node-id=12-345",
-      "expected_output": "Pulls screenshot/design context/variables first; builds a hex→token and spacing→token mapping before coding; converts line-height px to a height multiplier; converts fixed frame width and absolute positioning to flexible layout; flags off-scale values.",
-      "files": []
+      "prompt": "Build this Figma frame as a Flutter widget `PlanCard` in lib/features/plans/plan_card.dart. Figma inspect values: frame 375px wide, fill #FFFFFF, corner radius 8, auto-layout vertical, padding 24, gap 12. Title: 'Pro plan', 18px Bold, line-height 24px, color #0D0D0D. Body: 'Unlimited lessons and priority support', 14px Regular, line-height 21px, color #4A4A4A. Price badge: fill #3D5AFE, text #FFFFFF 12px, radius 999, padding 4/8, positioned absolute top 16 right 16. Gap between body and button: 18px.",
+      "expected_output": "Maps hexes to AppColors tokens, radius to Radii.card/pill, gaps/padding to Spacing; converts line-height px to multipliers (24/18\u22481.33, 21/14=1.5); drops fixed 375 width; notes the off-scale 18px gap; analyze clean.",
+      "files": [],
+      "assertions": [
+        "No Color(0x...) literals in plan_card.dart",
+        "Uses AppText base/heading copyWith (no bare TextStyle()) for the text",
+        "Line heights expressed as multipliers (~1.33 and 1.5), not 24/21",
+        "No fixed width of 375 on the card",
+        "Off-scale 18px gap is rounded to a Spacing token and called out in the summary",
+        "flutter analyze reports no issues",
+        "The shared token file is unchanged: no new token added for a value that maps or rounds to an existing one",
+        "Text styles derive from existing AppText styles, not new global styles",
+        "No files unrelated to the task are modified",
+        "No Colors.* Material constants in the new widget",
+        "A long title cannot run under the absolutely positioned badge (space reserved or tested)"
+      ]
     },
     {
       "id": 3,
-      "prompt": "Structure a new 'payments history' feature: fetch a paginated list from GET /payments?cursor=, cache it for offline, and show it in a list with pull to refresh.",
-      "expected_output": "Feature-first domain/data/presentation folders; repository interface in domain, DTO + mapper in data; Result/AppError instead of thrown exceptions; cursor pagination state that ignores concurrent loads; cache-then-network strategy; sealed states; lazy ListView.builder; fakes in tests.",
-      "files": []
+      "prompt": "Add a 'payments history' feature: fetch a paginated list from GET /payments?cursor=<cursor> (response: {items:[{id, amount_cents, currency, created_at}], next_cursor}), cache it so it shows offline, and show it in a list with pull to refresh and infinite scroll. Include tests. Use a fake API source; no real HTTP needed.",
+      "expected_output": "Feature-first domain/data/presentation; repository interface in domain; DTO+mapper in data; Result/AppError; cursor pagination state ignoring concurrent loads; cache-then-network; sealed states; lazy list; fake-based tests passing.",
+      "files": [],
+      "assertions": [
+        "lib/features/payments has domain/, data/ and presentation/ folders",
+        "Domain declares an abstract repository interface; domain files import no Flutter/HTTP/JSON packages",
+        "Repository returns Result/AppError rather than throwing to presentation",
+        "Pagination guards against concurrent load-more calls",
+        "Cached data is shown before/without network (cache-then-network or offline-first)",
+        "List uses ListView.builder/separated or slivers",
+        "Tests use fakes and flutter test passes",
+        "Concurrent refreshes share one in-flight request",
+        "Load-more is triggered from a scroll listener, not from build(), and does not re-fire in a loop after a failure",
+        "A feature does not import another feature's data/ or presentation/"
+      ]
     },
     {
       "id": 4,
-      "prompt": "Our signup form lets users tap Submit twice and creates two accounts. Also errors show while they're still typing. Fix it.",
-      "expected_output": "Guards in the state holder (ignore submit while Submitting / droppable) as well as disabling the button; doesn't rely on a loading overlay; errors shown on blur/submit with onUserInteraction after; focus moves to first invalid field; adds a widget test that double-taps and asserts one submit.",
-      "files": []
+      "prompt": "Our signup form (lib/features/signup/signup_screen.dart) lets users tap 'Create account' twice and it creates two accounts. Also errors show while they're still typing the first character. Fix both and add a test.",
+      "expected_output": "Real in-flight guard (button disabled and/or early return while submitting), not the pass-through overlay; errors on interaction/submit instead of always; test double-taps and asserts one createAccount call; also handles failures/mounted.",
+      "files": [],
+      "assertions": [
+        "Submit is guarded while in flight (disabled onPressed and/or early return)",
+        "AutovalidateMode.always is no longer used from the first keystroke",
+        "A test taps the button twice and asserts createAccount was called once",
+        "setState after await is guarded by mounted (or equivalent)",
+        "flutter test passes",
+        "The leaky IgnorePointer overlay is removed or fixed (root cause)",
+        "A test proves two taps in the same frame (no pump between) call the API once",
+        "No unrelated behaviour changed (e.g. layout rewrite, email normalisation) without being called out"
+      ]
     },
     {
       "id": 5,
-      "prompt": "The courses list janks when scrolling on older Android phones. Each row has a network thumbnail and a blurred shadow.",
-      "expected_output": "Asks to profile in profile mode on device; ListView.builder with itemExtent if fixed; cacheWidth/ResizeImage for thumbnails with cached placeholders; removes/replaces blur shadows in rows; const rows and narrowed rebuilds.",
-      "files": []
+      "prompt": "lib/features/courses/courses_screen.dart janks when scrolling on older Android phones with ~500 courses. Fix the performance problems.",
+      "expected_output": "ListView.builder instead of Column-in-scroll; decode thumbnails near display size (cacheWidth); remove/replace heavy blur shadow; row extracted as const-able widget; mentions profiling in profile mode.",
+      "files": [],
+      "assertions": [
+        "Uses a lazy ListView.builder / SliverList instead of Column + map inside SingleChildScrollView",
+        "Thumbnails decoded at display size (cacheWidth/cacheHeight/ResizeImage)",
+        "Large blurRadius shadow removed or reduced",
+        "Rows extracted into a separate widget class",
+        "Summary recommends profiling in profile mode on a real device",
+        "flutter analyze reports no issues",
+        "No filtering or lower-casing work happens inside build()",
+        "Rows have stable keys or the list uses itemExtent/prototypeItem",
+        "No files unrelated to the task are modified",
+        "Thumbnail decode size uses devicePixelRatio and sets only one of cacheWidth/cacheHeight",
+        "Claims in the final summary match the actual diff"
+      ]
     },
     {
       "id": 6,
-      "prompt": "Write a widget test that checks the profile card doesn't overflow.",
-      "expected_output": "Pumps with the real theme and providers; loads the real brand font via FontLoader; tests several sizes and a larger text scale; asserts tester.takeException() is null.",
-      "files": []
+      "prompt": "Write a widget test that checks ProfileCompletionCard (lib/features/profile/presentation/widgets/profile_completion_card.dart) doesn't overflow on small phones or with large accessibility text.",
+      "expected_output": "Pumps with MaterialApp/theme; tests several sizes and text scales; asserts takeException is null; addresses Ahem test font (loads real font or explains); test passes.",
+      "files": [],
+      "assertions": [
+        "Test covers multiple screen sizes",
+        "Test covers a larger text scale (>=1.5)",
+        "Asserts tester.takeException() is null (or equivalent overflow detection)",
+        "Addresses the Ahem/test-font problem (loads a real font via FontLoader or explicitly explains why not)",
+        "flutter test passes",
+        "The card is pumped inside realistic parent constraints (scrollable/padded like the real screen)",
+        "The run shows the test can fail (mutation check) or explains how it would",
+        "No production lib/ files are modified"
+      ]
     },
     {
       "id": 7,
-      "prompt": "Deep link https://example.com/courses/42 should open the course screen, even if the app was killed and the user isn't logged in yet.",
-      "expected_output": "go_router route with id path param; central redirect preserving from=; App Links/Universal Links setup with assetlinks/AASA; validates the id; tests cold vs warm start with adb/simctl commands.",
-      "files": []
+      "prompt": "Deep link https://example.com/courses/42 should open the course screen, even if the app was killed and the user isn't logged in yet. The app doesn't have routing yet. Set it up (code + whatever native/site config is needed \u2014 write the config files/snippets into the project) and tell me how to test it.",
+      "expected_output": "go_router with :courseId path; central redirect preserving from=; refreshListenable on auth; App Links (intent-filter autoVerify + assetlinks.json) and Universal Links (entitlement + AASA); id validation; adb/simctl test commands for cold and warm start.",
+      "files": [],
+      "assertions": [
+        "Router defines a /courses/:courseId route (path parameter, not an object)",
+        "Auth redirect sends signed-out users to login and preserves the original location (e.g. from=)",
+        "Android intent-filter with autoVerify and an assetlinks.json are provided",
+        "iOS associated domains entitlement and apple-app-site-association are provided",
+        "Course id from the link is validated",
+        "Testing instructions include adb and xcrun simctl commands and cover cold start",
+        "flutter_deeplinking_enabled meta-data, if present, is inside the <activity> element",
+        "Auth has a distinct unknown/restoring state so the link survives session restore",
+        "Testing commands are runnable as written (include package/bundle id and the full URL)",
+        "Package name and bundle id match across assetlinks.json, AASA and native config",
+        "The associated-domains entitlement is in a .entitlements file, not Info.plist",
+        "A test drives the cold start: unknown \u2192 splash \u2192 login \u2192 target",
+        "The project's Dart/Flutter SDK minimum is not raised without asking"
+      ]
     },
     {
       "id": 8,
-      "prompt": "We need dev, qa and prod builds. Where should I put the API keys for our payment provider?",
-      "expected_output": "Native flavors with distinct app IDs and --dart-define-from-file config; explains dart-defines are extractable so secret keys stay server-side and only publishable/restricted keys ship; guard against QA builds reaching the prod track.",
-      "files": []
-    },
-    {
-      "id": 9,
-      "prompt": "What's the capital of France?",
-      "expected_output": "Skill should NOT trigger — unrelated to Flutter.",
-      "files": []
-    },
-    {
-      "id": 10,
-      "prompt": "Write a Python script that resizes all PNGs in a folder.",
-      "expected_output": "Skill should NOT trigger — not Flutter work.",
-      "files": []
+      "prompt": "We need dev, qa and prod builds of this app. Also, where should I put the secret API key for our payment provider? Set up what you can in the project and explain the rest.",
+      "expected_output": "Native flavors with distinct application IDs; --dart-define-from-file per env; states dart-defines are extractable so the secret key must stay server-side (only publishable keys in app); guard against QA builds reaching prod.",
+      "files": [],
+      "assertions": [
+        "Per-environment config files used with --dart-define(-from-file)",
+        "Distinct application IDs / bundle IDs per flavor",
+        "States the secret payment key must stay on the server, not in the app or dart-defines",
+        "Mentions restricting/publishable keys for anything that does ship in the app",
+        "Includes a safeguard against a QA build being released to production",
+        "A release-pipeline gate (script or CI step) blocks non-prod config from a prod build",
+        "Advises restricting shipped public keys in the provider dashboard",
+        "Includes committed-secret detection (gitleaks/secret scanning or a test)"
+      ]
     }
   ]
 }

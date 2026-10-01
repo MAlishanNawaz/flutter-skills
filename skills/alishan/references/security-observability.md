@@ -2,115 +2,34 @@
 
 ## Secrets: the app binary is public
 
-Anything in the app (Dart constants, `--dart-define`, assets, `.env` files bundled as assets,
-native config) **can be extracted**. Obfuscation only slows that down.
+Anything shipped can be extracted, and obfuscation only slows that down. That covers Dart constants, `--dart-define` values, bundled `.env`/assets and native config.
 
-- Real secrets (third-party API secret keys, signing keys, admin tokens) stay **on a server**.
-  The app calls your backend, and the backend calls the third party.
-- Keys that are *meant* to be public (Firebase config, Maps keys, publishable payment keys) are
-  fine in the app, but **restrict them** (bundle ID / SHA-1 / HTTP referrer, API scope) in the
-  provider's console.
-- Never commit secrets. Use `.gitignore` for local config, CI secret stores, and secret scanning
-  (GitHub push protection / `gitleaks`) in CI.
+- **Secret keys** (payment secret keys, third-party API secrets, admin tokens) live only on the backend, in its secret store. The app calls your backend, which calls the provider. For payments, the backend creates the intent with the secret key and returns a single-use client secret, and payment success is confirmed by webhook, never trusted from the client.
+- **Public keys** (publishable payment keys, Firebase and Maps config) may ship, but **restrict them** in the provider console by bundle ID, SHA-1, referrer and scope. Use test keys in dev/qa and live keys only in prod, and reject a secret-looking key (`sk_`, `rk_`) in app config at startup.
+- Never commit secrets. Use secret scanning and push protection, plus `gitleaks` in CI. Rotate any key that has ever been in the app, git history or chat.
 
-## Storing data on the device
+## Device storage
 
-| Data | Store |
-|---|---|
-| Access/refresh tokens, credentials | `flutter_secure_storage` (Keychain / Keystore). Never `shared_preferences` |
-| Personal data cached for offline | Encrypted DB (e.g. SQLCipher with drift) or keep it minimal |
-| Settings, flags | `shared_preferences` |
+- Tokens and credentials go in `flutter_secure_storage`, never `shared_preferences`. Clear them on sign-out. iOS Keychain items survive an uninstall, so clear them on the first launch after a reinstall if that matters.
+- Encrypt cached personal or financial data, or don't persist it.
+- Hide sensitive screens in the app switcher (`FLAG_SECURE`, or an iOS blur on inactive).
 
-- Clear tokens and cached personal data on sign-out.
-- iOS: Keychain items **survive uninstall**. Clear them on the first launch after a reinstall
-  if that matters.
-- Hide sensitive screens in the app switcher (`FLAG_SECURE` on Android, a blur overlay on iOS when
-  the app goes inactive) for banking, health or ID documents.
+## Hardening
 
-## Network
-
-- HTTPS only: Android `network_security_config` with `cleartextTrafficPermitted="false"`, and
-  iOS ATS left enabled.
-- Certificate pinning only if your threat model needs it, and with a **backup pin plus a plan
-  to rotate**. A bad pin bricks the app for every user.
-- Validate on the server. Client-side validation is for UX, not security.
-
-## Input & links
-
-- Deep links, push payloads, QR codes and WebView messages are **untrusted input**: validate them,
-  and never perform destructive actions without confirmation (`navigation-deeplinks.md`).
-- WebViews: restrict navigation to allowed domains, turn JavaScript off unless needed, and never
-  expose a JS bridge to arbitrary pages.
-- Don't build SQL, file paths or shell arguments from user input without escaping.
-
-## Hardening releases
-
-- `--obfuscate --split-debug-info=…` on release builds, and upload the symbols.
-- Android: R8/minify enabled, `android:allowBackup="false"` (or rules that exclude tokens),
-  `debuggable` false in release, and `exported` set explicitly on components.
-- Keep dependencies current. Run `flutter pub outdated` and check advisories before each release.
-- For high-risk apps: root/jailbreak detection and app attestation (Play Integrity / App
-  Attest) checked **on the server**.
+- HTTPS only: Android `cleartextTrafficPermitted="false"`, and leave iOS ATS on.
+- Cert pinning only if the threat model needs it, and always with a backup pin and a rotation plan.
+- Release builds: `--obfuscate --split-debug-info`, R8 on, `allowBackup="false"` (or rules that exclude tokens), and `exported` set explicitly.
+- Deep links, push payloads, QR codes and WebView messages are untrusted input. Validate them, and never take destructive actions without confirmation.
 
 ## Privacy
 
-- Collect the minimum. Every analytics property should have a purpose.
-- **No PII in logs, analytics or crash reports**: no emails, names, phone numbers, tokens or free
-  text. Use opaque user IDs.
-- Ask for consent where the law requires it (analytics/ads in the EU, ATT on iOS) **before**
-  collecting, and respect opt-out.
-- Fill in the Play Data Safety form and the iOS privacy manifest (`PrivacyInfo.xcprivacy`)
-  accurately, and include required-reason APIs used by plugins.
+- **No PII in logs, analytics or crash reports.** Use opaque user IDs.
+- Get consent before collecting where required (EU analytics, iOS ATT).
+- Keep the Play Data Safety form and the iOS `PrivacyInfo.xcprivacy` accurate.
 
 ## Observability
 
-### Crash reporting
-
-```dart
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await initCrashReporting();                          // Crashlytics or Sentry
-
-  FlutterError.onError = (details) => crash.recordFlutterError(details);
-  PlatformDispatcher.instance.onError = (error, stack) {
-    crash.record(error, stack, fatal: true);
-    return true;
-  };
-
-  runApp(const App());
-}
-```
-
-- Tag every report with **flavor, version, build number** and an opaque user ID.
-- Use breadcrumbs (screen views, key actions) so you can see what led to a crash.
-- Upload obfuscation symbols for every release (`flavors-ci-release.md`).
-
-### Logging
-
-- One `Logger` abstraction (e.g. the `logging` package) with levels. Debug logs go to the
-  console in dev; warnings and errors go to the crash tool's breadcrumbs or a log backend in prod.
-- Log **once** where an error is translated (the data layer), with context: endpoint, status,
-  `AppError` type, request id. Not at every layer.
-- Make logs **structured** (key/value) so they can be searched, and redact PII.
-
-### Analytics
-
-- An `Analytics` interface in `core/`, implemented by Firebase/Amplitude/etc. and faked in tests.
-- **Typed events**: `analytics.track(CourseOpened(courseId: id))`, not `track('course_open', {...})`
-  strings scattered around. Keep a tracking plan (event, properties, owner).
-- Send screen views from the router (observer), not from each screen.
-- Fire "viewed" events once per real view, not on every rebuild.
-
-### Performance monitoring
-
-Firebase Performance or Sentry tracing for app start, screen render times and network latency.
-Watch the crash-free rate and ANRs (Android vitals) after every release.
-
-## Checklist
-
-- [ ] No real secrets in the app; public keys restricted; secret scanning in CI.
-- [ ] Tokens in secure storage; cleared on sign-out.
-- [ ] HTTPS enforced; links, payloads and WebViews treated as untrusted.
-- [ ] Release builds obfuscated and minified, symbols uploaded.
-- [ ] Crash reporting catches Flutter and platform errors, tagged with flavor and build.
-- [ ] No PII in logs or analytics; consent handled; store privacy forms accurate.
+- **Crashes**: route both `FlutterError.onError` and `PlatformDispatcher.instance.onError` to Crashlytics or Sentry. Tag every report with flavor, version and build number, and add breadcrumbs for screens and key actions.
+- **Logs**: use one `Logger` abstraction with structured key/value entries and PII redacted. Log once, where the error is translated (the data layer), with the endpoint, status, `AppError` type and request id.
+- **Analytics**: an interface in `core/` with typed events (`track(CourseOpened(id))`), not stray strings. Send screen views from a router observer. Fire "viewed" once per real view.
+- After each release, watch the crash-free rate and ANRs.
