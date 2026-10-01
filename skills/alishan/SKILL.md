@@ -1,6 +1,6 @@
 ---
 name: alishan
-description: Alishan's Flutter playbook — architect apps in clean feature-first layers with functional, immutable Dart, and build screens, widgets and Figma designs in any Flutter app with every colour, text style, radius and gap bound to a design token, shared widgets reused before new ones are written, layouts that hold up on phones and narrow web columns, UI tests that catch real overflows, plus state management, performance, accessibility, theming and forms. Use when creating or refactoring a Flutter screen, card, dialog, button or input; when implementing a Figma frame or figma.com link in Flutter; when setting up or auditing a design-token file; when writing widget/layout tests for UI; or when designing app architecture, structuring features, repositories, state and error handling, or writing functional-style Dart (immutability, pure functions, sealed states, Result types); when writing a bloc/cubit/Riverpod/provider state holder; when fixing jank or slow lists; when handling accessibility, dark mode or RTL; or when building forms and validation.
+description: Alishan's end-to-end Flutter playbook. It covers clean feature-first architecture with functional, immutable Dart; UI where every colour, text style, radius and gap is a design token; Figma-to-Flutter translation; state management (bloc/cubit, Riverpod, provider); forms; performance; accessibility, theming and dark mode; animation; networking, caching and offline; navigation and deep links; testing from unit tests to E2E; flavors, CI/CD and store releases; security, logging and analytics; and native platform integration. Use for any Flutter or Dart app work: building or refactoring screens and widgets, implementing a Figma frame or figma.com link, structuring a feature or repository, writing state holders, fixing jank, adding API calls or offline support, routing and deep links, writing tests, setting up environments or release pipelines, handling secrets, permissions, push notifications or platform channels. Do not use for non-Flutter work.
 ---
 
 # Flutter — Alishan's playbook
@@ -23,20 +23,45 @@ Six rules sit under everything here:
 
 ## Pick the guide for the task
 
+**Build the UI**
+
 | Task | Read |
 |---|---|
-| Find, use, or create the project's tokens (colours, text, spacing, radius) | `references/design-tokens.md` |
+| Find, use or create the project's tokens (colours, text, spacing, radius) | `references/design-tokens.md` |
 | Build or refactor a screen / widget | `references/ui-components.md` |
 | Implement a Figma frame or figma.com link | `references/figma-to-flutter.md` (and the two above) |
-| Write widget, layout or golden tests for UI | `references/ui-testing.md` |
-| Model data/state, write business logic, handle errors functionally | `references/functional-programming.md` |
-| Structure an app or feature, add a repository, wire DI, review architecture | `references/architecture.md` |
-| Write a bloc/cubit, Riverpod notifier, ChangeNotifier; decide where state lives | `references/state-management.md` |
-| Jank, slow lists, heavy images, startup time, memory leaks | `references/performance.md` |
+| Forms: validation, error timing, keyboard/focus, safe submit | `references/forms.md` |
 | Screen readers, tap targets, text scale, contrast, dark mode, RTL | `references/accessibility-theming.md` |
-| Build a form: validation, error timing, keyboard/focus, safe submit | `references/forms.md` |
-| See all of the above in real, tested code | `examples/profile_feature/` (one complete feature) |
-| Project has no token file yet | `references/tokens_template.dart` as a starting point |
+| Implicit/explicit animation, Hero, page transitions, reduced motion | `references/animation-motion.md` |
+
+**Structure the app**
+
+| Task | Read |
+|---|---|
+| Layers, feature folders, repositories, DI, architecture review | `references/architecture.md` |
+| Immutable data, pure functions, sealed states, `Result` errors | `references/functional-programming.md` |
+| bloc/cubit, Riverpod, provider; where state lives | `references/state-management.md` |
+| HTTP client, auth refresh, retries, caching, offline sync, pagination | `references/networking-offline.md` |
+| Routes, auth redirects, tabs, deep links / App Links / Universal Links, web URLs | `references/navigation-deeplinks.md` |
+| Permissions, push notifications, Pigeon/channels, lifecycle, `kIsWeb` | `references/platform-integration.md` |
+
+**Quality & shipping**
+
+| Task | Read |
+|---|---|
+| Widget, layout, golden tests; real fonts; sizes and text scale | `references/ui-testing.md` |
+| Test pyramid, fakes, bloc tests, integration/Patrol E2E, coverage, CI tests | `references/testing-strategy.md` |
+| Jank, slow lists, heavy images, startup time, memory leaks | `references/performance.md` |
+| Flavors, `--dart-define`, versioning, CI pipeline, store releases | `references/flavors-ci-release.md` |
+| Secrets, secure storage, hardening, privacy, crash reporting, logging, analytics | `references/security-observability.md` |
+
+**Starters**
+
+| Need | Use |
+|---|---|
+| A complete, tested feature to copy patterns from | `examples/profile_feature/` |
+| Project has no token file | `references/tokens_template.dart` |
+| Project has weak or no lints | `references/analysis_options.yaml` |
 
 Read only the guides the task needs.
 
@@ -74,4 +99,7 @@ ls .fvmrc .fvm/fvm_config.json 2>/dev/null
       `SafeArea` at the edges.
 - [ ] Labelled for screen readers, 48 dp targets, holds at 2× text, works in dark mode if the app has it.
 - [ ] Logic in pure functions; state immutable; no I/O in widgets; layer boundaries respected.
+- [ ] Failures mapped to `AppError` and shown to the user; nothing secret or personal in the app
+      binary or logs.
+- [ ] Tests at the lowest layer that covers the change (unit → state holder → widget → E2E).
 - [ ] `dart format`, `flutter analyze` clean; tests pass.

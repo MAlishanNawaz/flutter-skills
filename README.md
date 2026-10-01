@@ -8,22 +8,36 @@ responsive, and tested with real fonts.
 
 ### `/alishan`: Flutter playbook
 
-One entry point that loads the right guide for the task:
+One entry point. It reads your project's own conventions first, then loads only the guide for the task.
 
-| Guide | Covers |
-|---|---|
-| [`design-tokens.md`](skills/alishan/references/design-tokens.md) | Finding a project's colour, text, spacing and radius tokens; no raw hex, `TextStyle()` or magic numbers; a grep to review your diff |
-| [`ui-components.md`](skills/alishan/references/ui-components.md) | Reuse-before-build, narrow-column/web layout, copy, state, null safety, interaction details |
-| [`figma-to-flutter.md`](skills/alishan/references/figma-to-flutter.md) | Turning Figma (or Figma MCP output) into token-bound Flutter: auto-layout mapping, line-height and letter-spacing maths, common export pitfalls |
-| [`ui-testing.md`](skills/alishan/references/ui-testing.md) | Widget tests with the real theme, loading real fonts so overflows are real, multi-size and text-scale checks, `kIsWeb` and goldens |
-| [`functional-programming.md`](skills/alishan/references/functional-programming.md) | Immutable models, pure business functions, sealed states with exhaustive `switch`, `Result` errors, composition, side effects at the edges |
-| [`architecture.md`](skills/alishan/references/architecture.md) | Presentation/domain/data layers, feature-first folders, unidirectional data flow, repositories, DI, testing each layer, review checklist |
-| [`state-management.md`](skills/alishan/references/state-management.md) | bloc/cubit, Riverpod and provider done well: where state lives, narrow rebuilds, listeners for effects, anti-patterns |
-| [`performance.md`](skills/alishan/references/performance.md) | Profiling, rebuild scope, lazy lists and slivers, image decode size, isolates, startup, leaks |
-| [`accessibility-theming.md`](skills/alishan/references/accessibility-theming.md) | Semantics, 48 dp targets, 2× text, contrast, reduced motion, a11y guideline tests, `ThemeExtension` dark mode, RTL |
-| [`forms.md`](skills/alishan/references/forms.md) | Pure composable validators, when to show errors, keyboard/focus/autofill, double-submit-proof submit, server field errors |
-| [`examples/profile_feature`](skills/alishan/examples/profile_feature) | A complete, tested feature (domain/data/presentation + 18 tests) showing every guide in practice |
-| [`tokens_template.dart`](skills/alishan/references/tokens_template.dart) | A starter token file for projects that don't have one |
+**Build the UI**
+- [`design-tokens.md`](skills/alishan/references/design-tokens.md): no raw hex, `TextStyle()` or magic numbers; finding and creating tokens
+- [`ui-components.md`](skills/alishan/references/ui-components.md): reuse before you build, narrow-column/web layout, copy, interaction details
+- [`figma-to-flutter.md`](skills/alishan/references/figma-to-flutter.md): Figma / Figma MCP output → token-bound Flutter
+- [`forms.md`](skills/alishan/references/forms.md): composable validators, when to show errors, keyboard/autofill, double-submit-proof
+- [`accessibility-theming.md`](skills/alishan/references/accessibility-theming.md): semantics, 48 dp targets, 2× text, contrast, `ThemeExtension` dark mode, RTL
+- [`animation-motion.md`](skills/alishan/references/animation-motion.md): implicit → explicit, motion tokens, Hero, transitions, reduced motion
+
+**Structure the app**
+- [`architecture.md`](skills/alishan/references/architecture.md): presentation/domain/data, feature-first folders, repositories, DI
+- [`functional-programming.md`](skills/alishan/references/functional-programming.md): immutability, pure functions, sealed states, `Result` errors
+- [`state-management.md`](skills/alishan/references/state-management.md): bloc/cubit, Riverpod, provider done well
+- [`networking-offline.md`](skills/alishan/references/networking-offline.md): dio client, single-flight auth refresh, retries, caching, offline outbox, pagination
+- [`navigation-deeplinks.md`](skills/alishan/references/navigation-deeplinks.md): go_router, auth redirects, tab shells, App Links / Universal Links, web URLs
+- [`platform-integration.md`](skills/alishan/references/platform-integration.md): `kIsWeb`, plugins, Pigeon/channels, permissions, push, lifecycle
+
+**Quality & shipping**
+- [`ui-testing.md`](skills/alishan/references/ui-testing.md): widget tests with the real theme and fonts, sizes, text scale
+- [`testing-strategy.md`](skills/alishan/references/testing-strategy.md): test pyramid, fakes, bloc tests, integration/Patrol E2E, coverage
+- [`performance.md`](skills/alishan/references/performance.md): profiling, rebuild scope, lazy lists, image decoding, isolates, startup
+- [`flavors-ci-release.md`](skills/alishan/references/flavors-ci-release.md): fvm, flavors, `--dart-define`, CI, Play/App Store releases
+- [`security-observability.md`](skills/alishan/references/security-observability.md): secrets, secure storage, hardening, privacy, crashes, logs, analytics
+
+**Starters**
+- [`examples/profile_feature`](skills/alishan/examples/profile_feature): a complete feature (domain/data/presentation + 18 tests), passes analyze and test on Flutter 3.24 and 3.41
+- [`tokens_template.dart`](skills/alishan/references/tokens_template.dart): starter design-token file
+- [`analysis_options.yaml`](skills/alishan/references/analysis_options.yaml): strict lint set that enforces many of the rules
+- [`evals/evals.json`](skills/alishan/evals/evals.json): test prompts for checking the skill with `skill-creator`
 
 The guides aren't tied to any project. The skill reads your project's own tokens, widgets,
 state management and copy setup first, and follows them.

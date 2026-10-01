@@ -1,0 +1,65 @@
+{
+  "skill_name": "alishan",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add a 'Course details' screen to this Flutter app. It shows the course title, a status chip (approved / under review / rejected), a yellow tip box, and a primary 'Upload certificate' button. The design uses #FFF7B1 for the tip box and 16px padding.",
+      "expected_output": "Reuses existing button/tip widgets; maps #FFF7B1 and 16px to the project's tokens instead of literals; status as an enum/sealed type rendered with an exhaustive switch; copy externalised; scrollable layout with SafeArea; no fixed widths.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Implement this Figma frame in Flutter: https://www.figma.com/design/EXAMPLE/App?node-id=12-345",
+      "expected_output": "Pulls screenshot/design context/variables first; builds a hex→token and spacing→token mapping before coding; converts line-height px to a height multiplier; converts fixed frame width and absolute positioning to flexible layout; flags off-scale values.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Structure a new 'payments history' feature: fetch a paginated list from GET /payments?cursor=, cache it for offline, and show it in a list with pull to refresh.",
+      "expected_output": "Feature-first domain/data/presentation folders; repository interface in domain, DTO + mapper in data; Result/AppError instead of thrown exceptions; cursor pagination state that ignores concurrent loads; cache-then-network strategy; sealed states; lazy ListView.builder; fakes in tests.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Our signup form lets users tap Submit twice and creates two accounts. Also errors show while they're still typing. Fix it.",
+      "expected_output": "Guards in the state holder (ignore submit while Submitting / droppable) as well as disabling the button; doesn't rely on a loading overlay; errors shown on blur/submit with onUserInteraction after; focus moves to first invalid field; adds a widget test that double-taps and asserts one submit.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "The courses list janks when scrolling on older Android phones. Each row has a network thumbnail and a blurred shadow.",
+      "expected_output": "Asks to profile in profile mode on device; ListView.builder with itemExtent if fixed; cacheWidth/ResizeImage for thumbnails with cached placeholders; removes/replaces blur shadows in rows; const rows and narrowed rebuilds.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Write a widget test that checks the profile card doesn't overflow.",
+      "expected_output": "Pumps with the real theme and providers; loads the real brand font via FontLoader; tests several sizes and a larger text scale; asserts tester.takeException() is null.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Deep link https://example.com/courses/42 should open the course screen, even if the app was killed and the user isn't logged in yet.",
+      "expected_output": "go_router route with id path param; central redirect preserving from=; App Links/Universal Links setup with assetlinks/AASA; validates the id; tests cold vs warm start with adb/simctl commands.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "We need dev, qa and prod builds. Where should I put the API keys for our payment provider?",
+      "expected_output": "Native flavors with distinct app IDs and --dart-define-from-file config; explains dart-defines are extractable so secret keys stay server-side and only publishable/restricted keys ship; guard against QA builds reaching the prod track.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "What's the capital of France?",
+      "expected_output": "Skill should NOT trigger — unrelated to Flutter.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Write a Python script that resizes all PNGs in a folder.",
+      "expected_output": "Skill should NOT trigger — not Flutter work.",
+      "files": []
+    }
+  ]
+}

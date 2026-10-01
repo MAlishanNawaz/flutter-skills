@@ -29,18 +29,27 @@ class FakeProfileRepository implements ProfileRepository {
 class FakeRemoteSource implements ProfileRemoteSource {
   FakeRemoteSource({this.json = const {}, this.error});
   final Map<String, Object?> json;
-  final Object? error;
+  final Object? error; // an Exception or an Error
   Map<String, Object?>? lastPatch;
+
+  void _maybeThrow() {
+    switch (error) {
+      case final Exception e:
+        throw e;
+      case final Error e:
+        throw e;
+    }
+  }
 
   @override
   Future<Map<String, Object?>> fetch(String id) async {
-    if (error case final e?) throw e;
+    _maybeThrow();
     return json;
   }
 
   @override
   Future<Map<String, Object?>> patch(String id, Map<String, Object?> fields) async {
-    if (error case final e?) throw e;
+    _maybeThrow();
     lastPatch = fields;
     return {...json, ...fields};
   }
