@@ -49,16 +49,16 @@ state management and copy setup first, and follows them.
 
 ## Tested
 
-The skill is evaluated with [`evals/evals.json`](skills/alishan/evals/evals.json): 8 realistic tasks, each with objective checks. A blind grader scores every run, comparing runs with and without the skill and across models. Latest round, on the three tasks that separated versions most (Figma → widget, list jank, cold-start deep link):
+The skill is evaluated with [`evals/evals.json`](skills/alishan/evals/evals.json): 8 realistic tasks, each with objective checks, scored by a blind grader. The latest rounds used the three tasks that separated versions the most (Figma to widget, list jank, cold-start deep link):
 
-| Configuration | Checks passed | Avg rank (of 4) |
-|---|---|---|
-| This version, Opus | 28/28 (100%) | 1.0 |
-| Previous version, Opus | 26/28 (93%) | 2.3 |
-| This version, Sonnet | 24/28 (86%) | 2.7 |
-| This version, Haiku | 21/28 (75%) | 4.0 |
+| Configuration | Checks passed |
+|---|---|
+| Current version, Opus | 28/28 (100%), ranked first on every task |
+| Current version, Sonnet | 34/35 (97%), up from 83% before the verify gate and deep-link workflow |
+| Current version, Haiku | 21/35 (60%), unchanged |
+| Previous (longer) version, Opus | 26/28 (93%) |
 
-Haiku's misses (skipping the token check, losing the cold-start link) led to the "before your final message" gate and the deep-link workflow in SKILL.md.
+**Use it with Sonnet or Opus.** Haiku follows parts of the workflow, such as the deep-link auth states, but still skips tests and invents one-off tokens, so review its output closely.
 
 ## Install
 
